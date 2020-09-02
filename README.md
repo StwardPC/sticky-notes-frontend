@@ -1,1 +1,1 @@
-# sticky-notes-frontend
+# A ReactJS App
