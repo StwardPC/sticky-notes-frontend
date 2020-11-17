@@ -1,18 +1,35 @@
 import React, { useContext, useEffect, useState } from "react";
 import { AuthContext } from "../App";
 import { Button } from "@material-ui/core";
+import ConfirmationModal from "../components/ConfirmationModal";
 
 function AccountView() {
   // CURRENT USER'S ACCOUNT DATA STATE
   const [currentUserData, setCurrentUserData] = useState(null);
+  const [confirm, setConfirm] = useState(false);
 
   // CURRENT USER'S LOGIN STATE
   const authContext = useContext(AuthContext);
   const { isAuthenticated, token, userID } = authContext.state;
 
+  // HANDLERS
+  const openConfirmHandler = () => {
+    setConfirm(true);
+  };
+  const closeConfirmHandler = () => {
+    setConfirm(false);
+  };
+
+  const logoutHandler = () => {
+    authContext.dispatch({
+      type: "LOGOUT",
+    });
+  };
+
   // REQUEST FOR GRAPHQL IN ORDER TO GET THE CURRENT USER'S DATA
-  const getUserDataRequest = {
-    query: `
+  const getCurrentUserData = () => {
+    const getUserDataRequest = {
+      query: `
       query {
         currentUser (_id: "${userID}") {
           fullName
@@ -21,9 +38,8 @@ function AccountView() {
         }
       }
     `,
-  };
+    };
 
-  const getCurrentUserData = () => {
     fetch("http://localhost:3000/graphql", {
       method: "POST",
       body: JSON.stringify(getUserDataRequest),
@@ -47,9 +63,48 @@ function AccountView() {
       });
   };
 
+  // REQUEST FOR DELETING ACCOUNT
+  const deleteAccount = () => {
+    const deleteAccountRequest = {
+      query: `
+        mutation {
+          deleteUser (_id: "${userID}") {
+            _id
+            username
+            email
+          }
+        }
+      `,
+    };
+
+    fetch("http://localhost:3000/graphql", {
+      method: "POST",
+      body: JSON.stringify(deleteAccountRequest),
+      headers: {
+        "Content-Type": "application/json",
+      },
+    })
+      .then((res) => {
+        if (res.status != 200 && res.status != 201) {
+          console.log("no 200 response for deleting account");
+        } else {
+          return res.json();
+        }
+      })
+      .then((res) => {
+        closeConfirmHandler();
+        logoutHandler();
+      })
+      .catch(() => {
+        throw new Error("Cannot delete account atm");
+      });
+  };
+
   useEffect(() => {
     getCurrentUserData();
   }, []);
+
+  const alertmsg = "Are you sure that you want to delete your account forever?";
 
   return (
     <div>
@@ -58,12 +113,22 @@ function AccountView() {
           <h1>{currentUserData.username}</h1>
           <h2>{currentUserData.fullName}</h2>
           <h2>{currentUserData.email}</h2>
-          <Button variant="contained" color="secondary">
+          <Button
+            variant="contained"
+            color="secondary"
+            onClick={openConfirmHandler}
+          >
             Delete account
           </Button>
+          <ConfirmationModal
+            open={confirm}
+            onClose={closeConfirmHandler}
+            msg={alertmsg}
+            onConfirm={deleteAccount}
+          />
         </>
       ) : (
-        <h1>No notes</h1>
+        <h1>No user data</h1>
       )}
     </div>
   );
