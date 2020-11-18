@@ -43,8 +43,8 @@ function SignUpView() {
         query: `
         mutation{
           createUser(uInput: {
-            username: "${fullName}",
-            fullName: "${username}",
+            username: "${username}",
+            fullName: "${fullName}",
             email: "${email}",
             password: "${password}"
           }), {

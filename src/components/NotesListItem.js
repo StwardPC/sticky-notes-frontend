@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useContext, useEffect, useRef, useState } from "react";
 import {
   Box,
   Card,
@@ -14,6 +14,7 @@ import {
 } from "@material-ui/core";
 import { Edit, DeleteForever } from "@material-ui/icons";
 import ConfirmationModal from "./ConfirmationModal";
+import { AuthContext } from "../App";
 
 function EditNoteModal({ open, onClose, item }) {
   const cInput = useRef();
@@ -55,6 +56,7 @@ function EditNoteModal({ open, onClose, item }) {
         }
       })
       .then((res) => {
+        console.log(res);
         onClose();
       })
       .catch(() => {
@@ -108,6 +110,10 @@ function EditNoteModal({ open, onClose, item }) {
 }
 
 function ListItem({ item }) {
+  // CURRENT USER'S LOGIN STATE
+  const authContext = useContext(AuthContext);
+  const { isAuthenticated, token, userID } = authContext.state;
+
   const [open, setOpen] = useState(false);
   const [confirm, setConfirm] = useState(false);
 
@@ -131,12 +137,12 @@ function ListItem({ item }) {
     const deleteNoteRequest = {
       query: `
         mutation {
-          deleteNote (_id: "${item._id}") {
+          deleteNote (_id: "${item._id}", userID: "${userID}") {
             _id
             category
             body
           }
-        }        
+        }    
       `,
     };
 
