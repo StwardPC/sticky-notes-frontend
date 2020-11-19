@@ -1,4 +1,10 @@
-import React, { useReducer, createContext } from "react";
+import React, {
+  useReducer,
+  createContext,
+  useContext,
+  useEffect,
+  useState,
+} from "react";
 import { render } from "react-dom";
 import { BrowserRouter, Route, Redirect, Switch } from "react-router-dom";
 
@@ -10,32 +16,36 @@ import NotesView from "./views/Notes";
 import NavBar from "./navigation/NavBar";
 import AccountView from "./views/Account";
 
-// Login
+// LOGIN CONTEXT
 export const AuthContext = createContext();
+// NOTES LIST CONTEXT
+export const ListContext = createContext();
 
 // This state is basically for deciding when the user isn't logged in
-const initialState = {
-  isAuthenticated: false,
-  token: null,
-  userID: null,
-};
+const initialState = JSON.parse(localStorage.getItem("authData"));
 
 const reducer = (state, action) => {
+  let loginState = null;
+  let logoutState = null;
   switch (action.type) {
     case "LOGIN":
-      return {
+      loginState = {
         ...state,
         isAuthenticated: true,
         token: action.payload.token,
         userID: action.payload.userID,
       };
+      localStorage.setItem("authData", JSON.stringify(loginState));
+      return loginState;
     case "LOGOUT":
-      return {
+      logoutState = {
         ...state,
         isAuthenticated: false,
         token: null,
         userID: null,
       };
+      localStorage.setItem("authData", JSON.stringify(logoutState));
+      return logoutState;
     default:
       return {
         ...state,
@@ -45,32 +55,38 @@ const reducer = (state, action) => {
 
 function App() {
   const [state, dispatch] = useReducer(reducer, initialState);
-  console.log("current state: ", state);
+  const [hasChanged, setHasChanged] = useState(0);
 
   return (
     <React.StrictMode>
       <BrowserRouter>
         <AuthContext.Provider value={{ state: state, dispatch: dispatch }}>
-          <NavBar />
-          <main>
-            <Switch>
-              {!state.isAuthenticated ? (
-                <>
-                  <Redirect from="/notes" to="/login" exact />
-                  <Redirect from="/" to="/home" exact />
-                  <Route path="/login" component={LogInView} />
-                  <Route path="/signup" component={SignUpView} />
-                  <Route path="/home" component={HomeView} />
-                </>
-              ) : (
-                <>
-                  <Redirect from="/login" to="/notes" exact />
-                  <Route path="/notes" component={NotesView} />
-                  <Route path="/account" component={AccountView} />
-                </>
-              )}
-            </Switch>
-          </main>
+          <ListContext.Provider
+            value={{ hasChanged: hasChanged, setHasChanged: setHasChanged }}
+          >
+            <NavBar />
+            <main>
+              <Switch>
+                {state.isAuthenticated ? (
+                  <>
+                    <Redirect from="/login" to="/notes" exact />
+
+                    <Route path="/notes" component={NotesView} />
+
+                    <Route path="/account" component={AccountView} />
+                  </>
+                ) : (
+                  <>
+                    <Redirect from="/notes" to="/login" exact />
+                    <Redirect from="/" to="/home" exact />
+                    <Route path="/login" component={LogInView} />
+                    <Route path="/signup" component={SignUpView} />
+                    <Route path="/home" component={HomeView} />
+                  </>
+                )}
+              </Switch>
+            </main>
+          </ListContext.Provider>
         </AuthContext.Provider>
       </BrowserRouter>
     </React.StrictMode>

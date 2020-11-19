@@ -14,7 +14,7 @@ import {
   CardContent,
 } from "@material-ui/core";
 import { AddCircle } from "@material-ui/icons";
-import { AuthContext } from "../App";
+import { AuthContext, ListContext } from "../App";
 import NotesList from "../components/NotesList";
 
 const useStyles = makeStyles({
@@ -31,8 +31,10 @@ const useStyles = makeStyles({
 });
 
 // COMPONENT FOR THE MODAL AND CREATING A NOTE ON IT
-function CreateNoteModal({ onClose, open, updateNotesList }) {
+function CreateNoteModal({ onClose, open }) {
   const authContext = useContext(AuthContext);
+  const listContext = useContext(ListContext);
+
   const { token } = authContext.state;
 
   // Textfield references
@@ -81,7 +83,8 @@ function CreateNoteModal({ onClose, open, updateNotesList }) {
       .then((res) => {
         console.log(res);
         onClose();
-        updateNotesList();
+        // updateNotesList();
+        listContext.setHasChanged((listContext.hasChanged += 1));
       })
       .catch(() => {
         throw new Error("Didn't create a note at all");
@@ -122,6 +125,7 @@ function CreateNoteModal({ onClose, open, updateNotesList }) {
 function NotesView() {
   // CURRENT USER STATE
   const authContext = useContext(AuthContext);
+  const listContext = useContext(ListContext);
   const { isAuthenticated, token, userID } = authContext.state;
 
   // USER NOTES STATE
@@ -134,7 +138,6 @@ function NotesView() {
   const openHandler = () => {
     setOpen(true);
   };
-
   const closeHandler = () => {
     setOpen(false);
   };
@@ -180,10 +183,14 @@ function NotesView() {
       });
   };
 
-  // ON LOAD, GET THE NOTES
+  // ON RENDER, GET THE NOTES
   useEffect(() => {
     getNotes();
-  }, []);
+
+    return () => {
+      listContext.setHasChanged(0);
+    };
+  }, [listContext.hasChanged]);
 
   return (
     <>
@@ -197,11 +204,7 @@ function NotesView() {
         >
           <AddCircle />
         </IconButton>
-        <CreateNoteModal
-          open={open}
-          onClose={closeHandler}
-          updateNotesList={getNotes}
-        />
+        <CreateNoteModal open={open} onClose={closeHandler} />
       </div>
       <div>
         {userNotes ? <NotesList data={userNotes} /> : <h1>No notes</h1>}

@@ -16,8 +16,8 @@ function ConfirmationModal({ msg, onClose, open, onConfirm }) {
         </DialogContent>
         <DialogActions>
           <Button onClick={onClose}>Cancel</Button>
-          <Button color="primary" onClick={onConfirm}>
-            Yes
+          <Button color="secondary" onClick={onConfirm}>
+            Delete
           </Button>
         </DialogActions>
       </Dialog>

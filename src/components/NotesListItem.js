@@ -14,14 +14,16 @@ import {
 } from "@material-ui/core";
 import { Edit, DeleteForever } from "@material-ui/icons";
 import ConfirmationModal from "./ConfirmationModal";
-import { AuthContext } from "../App";
+import { AuthContext, ListContext } from "../App";
 
-function EditNoteModal({ open, onClose, item }) {
+function EditNoteModal({ open, onClose, item, token }) {
   const cInput = useRef();
   const bInput = useRef();
 
   // UPDATE BUTTON STATUS
   const [disable, setDisable] = useState(true);
+
+  const listContext = useContext(ListContext);
 
   const editNote = (event) => {
     event.preventDefault();
@@ -46,6 +48,7 @@ function EditNoteModal({ open, onClose, item }) {
       body: JSON.stringify(editNoteRequest),
       headers: {
         "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
       },
     })
       .then((res) => {
@@ -58,6 +61,7 @@ function EditNoteModal({ open, onClose, item }) {
       .then((res) => {
         console.log(res);
         onClose();
+        listContext.setHasChanged((listContext.hasChanged += 1));
       })
       .catch(() => {
         throw new Error("Cannot edit note atm");
@@ -117,6 +121,8 @@ function ListItem({ item }) {
   const [open, setOpen] = useState(false);
   const [confirm, setConfirm] = useState(false);
 
+  const listContext = useContext(ListContext);
+
   const closeHandler = () => {
     setOpen(false);
   };
@@ -151,6 +157,7 @@ function ListItem({ item }) {
       body: JSON.stringify(deleteNoteRequest),
       headers: {
         "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
       },
     })
       .then((res) => {
@@ -160,14 +167,17 @@ function ListItem({ item }) {
           return res.json();
         }
       })
-      .then(() => {
+      .then((res) => {
+        console.log(res);
         closeConfirmHandler();
+        listContext.setHasChanged((listContext.hasChanged += 1));
       })
       .catch(() => {
         throw new Error("Cannot delete note atm");
       });
   };
 
+  // MESSAGE FOR DELETE NOTE MODAL
   const alertmsg = "Are you sure?";
 
   return (
@@ -196,7 +206,12 @@ function ListItem({ item }) {
           >
             <DeleteForever />
           </IconButton>
-          <EditNoteModal open={open} onClose={closeHandler} item={item} />
+          <EditNoteModal
+            open={open}
+            onClose={closeHandler}
+            item={item}
+            token={token}
+          />
           <ConfirmationModal
             onClose={closeConfirmHandler}
             open={confirm}

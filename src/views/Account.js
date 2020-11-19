@@ -27,7 +27,7 @@ function AccountView() {
   };
 
   // REQUEST FOR GRAPHQL IN ORDER TO GET THE CURRENT USER'S DATA
-  const getCurrentUserData = () => {
+  const getCurrentUserData = (cancelSignal) => {
     const getUserDataRequest = {
       query: `
       query {
@@ -46,6 +46,7 @@ function AccountView() {
       headers: {
         "Content-Type": "application/json",
       },
+      signal: cancelSignal,
     })
       .then((res) => {
         if (res.status != 200 && res.status != 201) {
@@ -82,6 +83,7 @@ function AccountView() {
       body: JSON.stringify(deleteAccountRequest),
       headers: {
         "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
       },
     })
       .then((res) => {
@@ -92,6 +94,7 @@ function AccountView() {
         }
       })
       .then((res) => {
+        console.log(res);
         closeConfirmHandler();
         logoutHandler();
       })
@@ -101,7 +104,16 @@ function AccountView() {
   };
 
   useEffect(() => {
-    getCurrentUserData();
+    // AbortController FOR CANCELING THE getCurrentUserData'S FETCH
+    const abortController = new AbortController();
+    const signal = abortController.signal;
+
+    getCurrentUserData(signal);
+
+    // CANCEL
+    return () => {
+      abortController.abort();
+    };
   }, []);
 
   const alertmsg = "Are you sure that you want to delete your account forever?";
