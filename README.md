@@ -1,5 +1,5 @@
 # Sticky-Notes (Not official name)
-[![forthebadge](https://forthebadge.com/images/badges/works-on-my-machine.svg)](https://forthebadge.com)
+[![forthebadge](https://forthebadge.com/images/badges/works-on-my-machine.svg)](#)
 
 
 Sticky-Notes is a web application for creating notes so that you can read, share, edit and delete these notes from any device and place.
