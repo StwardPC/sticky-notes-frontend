@@ -5,7 +5,7 @@
 Sticky-Notes is a web application for creating notes so that you can read, share, edit and delete these notes from any device and place.
 
 ## Made with
-![Imgur](https://i.imgur.com/nC86xca.png)
+![Imgur](https://i.imgur.com/XM8zivT.png)
 
 ## Features
 
