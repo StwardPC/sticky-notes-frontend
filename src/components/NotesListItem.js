@@ -1,4 +1,4 @@
-import React, { useContext, useEffect, useRef, useState } from "react";
+import React, { useContext, useRef, useState } from "react";
 import {
   Box,
   Card,
@@ -12,8 +12,11 @@ import {
   Button,
   TextField,
 } from "@material-ui/core";
-import { Edit, DeleteForever } from "@material-ui/icons";
+import { Edit, Delete, RemoveRedEye } from "@material-ui/icons";
+
+import NoteDetails from "./NoteDetailsModal";
 import ConfirmationModal from "./ConfirmationModal";
+
 import { AuthContext, ListContext } from "../App";
 
 function EditNoteModal({ open, onClose, item, token }) {
@@ -120,13 +123,13 @@ function ListItem({ item }) {
 
   const [open, setOpen] = useState(false);
   const [confirm, setConfirm] = useState(false);
+  const [seeDetails, setSeeDetails] = useState(false);
 
   const listContext = useContext(ListContext);
 
   const closeHandler = () => {
     setOpen(false);
   };
-
   const openHandler = () => {
     setOpen(true);
   };
@@ -134,9 +137,15 @@ function ListItem({ item }) {
   const closeConfirmHandler = () => {
     setConfirm(false);
   };
-
   const openConfirmHandler = () => {
     setConfirm(true);
+  };
+
+  const openDetailsHandler = () => {
+    setSeeDetails(true);
+  };
+  const closeDetailsHandler = () => {
+    setSeeDetails(false);
   };
 
   const deleteNote = () => {
@@ -185,13 +194,18 @@ function ListItem({ item }) {
       <Card>
         <CardContent>
           <h2>{item.category}</h2>
-          <h3>{item.body}</h3>
-          <h3>{item.date}</h3>
-          <h3>{item.author.username}</h3>
+          <p>{item.body}</p>
           <IconButton
             aria-label="Add"
             variant="contained"
-            color="primary"
+            size="medium"
+            onClick={openDetailsHandler}
+          >
+            <RemoveRedEye />
+          </IconButton>
+          <IconButton
+            aria-label="Add"
+            variant="contained"
             size="medium"
             onClick={openHandler}
           >
@@ -204,7 +218,7 @@ function ListItem({ item }) {
             size="medium"
             onClick={openConfirmHandler}
           >
-            <DeleteForever />
+            <Delete />
           </IconButton>
           <EditNoteModal
             open={open}
@@ -217,6 +231,11 @@ function ListItem({ item }) {
             open={confirm}
             onConfirm={deleteNote}
             msg={alertmsg}
+          />
+          <NoteDetails
+            onOpen={seeDetails}
+            onClose={closeDetailsHandler}
+            item={item}
           />
         </CardContent>
       </Card>
